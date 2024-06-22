@@ -2,6 +2,8 @@
 
 *Visual instruction tuning towards large language and vision models with GPT-4 level capabilities, enhanced with the Qwen2 base model.*
 
+For more details on usage, refer to the original [LLaVA repository](https://github.com/haotian-liu/LLaVA). This custom repository specifically integrates the Qwen2 base model to leverage its advanced capabilities.
+
 ## Installation
 
 This repository builds upon the original LLaVA project, integrating the Qwen2 base model for improved performance.
@@ -39,4 +41,3 @@ If you are not using Linux, do *NOT* proceed, see instructions for [macOS](https
     # pip install flash-attn --no-build-isolation --no-cache-dir
     ```
 
-For more details on usage, refer to the original [LLaVA repository](https://github.com/haotian-liu/LLaVA). This custom repository specifically integrates the Qwen2 base model to leverage its advanced capabilities.
