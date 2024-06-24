@@ -1,10 +1,9 @@
 #!/bin/bash
 
-deepspeed llava/train/train_mem.py \
-    --deepspeed ./scripts/zero3.json \
+python -m torch.distributed.run --nnodes=1 --nproc_per_node=2 --master_port=20001 llava/train/train_mem.py \
     --model_name_or_path Qwen/Qwen2-1.5B-Instruct \
     --version plain \
-    --data_path ./playground/data/LLaVA-Pretrain/blip_laion_cc_sbu_558k.json \
+    --data_path ./playground/data/LLaVA-Pretrain/pretrain.json \
     --image_folder ./playground/data/LLaVA-Pretrain \
     --vision_tower ./checkpoints/clip-vit-large-patch14-336 \
     --mm_projector_type mlp2x_gelu \
@@ -13,7 +12,7 @@ deepspeed llava/train/train_mem.py \
     --mm_use_im_start_end False \
     --mm_use_im_patch_token False \
     --bf16 True \
-    --output_dir ./checkpoints/Qwen2-1.5B-Instruct-pretrain \
+    --output_dir ./checkpoints/Qwen2-1.5B-Instruct-pretrain-FinVis-v2 \
     --num_train_epochs 1 \
     --per_device_train_batch_size 4 \
     --per_device_eval_batch_size 4 \
@@ -32,4 +31,5 @@ deepspeed llava/train/train_mem.py \
     --gradient_checkpointing True \
     --dataloader_num_workers 4 \
     --lazy_preprocess True \
-    --report_to wandb
+    # --report_to wandb \
+    # --deepspeed ./scripts/zero3.json \

@@ -14,6 +14,7 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 
+from packaging import version
 import os
 import copy
 from dataclasses import dataclass, field
@@ -46,7 +47,6 @@ def rank0_print(*args):
         print(*args)
 
 
-from packaging import version
 IS_TOKENIZER_GREATER_THAN_0_14 = version.parse(tokenizers.__version__) >= version.parse('0.14')
 
 
@@ -177,7 +177,7 @@ def find_all_linear_names(model):
             names = name.split('.')
             lora_module_names.add(names[0] if len(names) == 1 else names[-1])
 
-    if 'lm_head' in lora_module_names: # needed for 16-bit
+    if 'lm_head' in lora_module_names:  # needed for 16-bit
         lora_module_names.remove('lm_head')
     return list(lora_module_names)
 
@@ -392,13 +392,110 @@ def preprocess_llama_2(
                 round_len = len(tokenizer(rou).input_ids)
                 instruction_len = len(tokenizer(parts[0]).input_ids) - 2
 
-            target[cur_len : cur_len + instruction_len] = IGNORE_INDEX
+            target[cur_len: cur_len + instruction_len] = IGNORE_INDEX
 
             cur_len += round_len
         target[cur_len:] = IGNORE_INDEX
 
         if cur_len < tokenizer.model_max_length:
             if cur_len != total_len:
+                target[:] = IGNORE_INDEX
+                print(
+                    f"WARNING: tokenization mismatch: {cur_len} vs. {total_len}."
+                    f" (ignored)"
+                )
+
+    return dict(
+        input_ids=input_ids,
+        labels=targets,
+    )
+
+
+# fix: add qwen2
+def preprocess_qwen_2(
+    sources,
+    tokenizer: transformers.PreTrainedTokenizer,
+    has_image: bool = False
+) -> Dict:
+    conv = conversation_lib.default_conversation.copy()
+    roles = {"human": conv.roles[0], "gpt": conv.roles[1]}
+
+    # Apply prompt templates
+    conversations = []
+    for i, source in enumerate(sources):
+        if roles[source[0]["from"]] != conv.roles[0]:
+            # Skip the first one if it is not from human
+            source = source[1:]
+
+        conv.messages = []
+        for j, sentence in enumerate(source):
+            role = roles[sentence["from"]]
+            assert role == conv.roles[j % 2], f"{i}"
+            conv.append_message(role, sentence["value"])
+        conversations.append(conv.get_prompt())
+
+    # Tokenize conversations
+
+    if has_image:
+        input_ids = torch.stack([tokenizer_image_token(prompt, tokenizer, return_tensors='pt') for prompt in conversations], dim=0)
+    else:
+        input_ids = tokenizer(
+            conversations,
+            return_tensors="pt",
+            padding="longest",
+            max_length=tokenizer.model_max_length,
+            truncation=True,
+        ).input_ids
+
+    targets = input_ids.clone()
+
+    assert conv.sep_style == conversation_lib.SeparatorStyle.QWEN_2
+
+    # Mask targets
+    sep = conv.sep + conv.roles[1] + ": "
+    for conversation, target in zip(conversations, targets):
+        total_len = int(target.ne(tokenizer.pad_token_id).sum())
+
+        rounds = conversation.split(conv.sep2)
+        rounds_len = len(rounds)
+        cur_len = 0
+        # target[:cur_len] = IGNORE_INDEX
+        for i, rou in enumerate(rounds):
+            if rou == "":
+                break
+
+            parts = rou.split(sep)
+            if len(parts) != 2:
+                break
+            parts[0] += sep
+
+            if has_image:
+                round_ids = tokenizer_image_token(rou, tokenizer)
+                instruction_ids = tokenizer_image_token(parts[0], tokenizer)
+                equal_parts = [x == y for x, y in zip(round_ids, instruction_ids)]
+
+                instruction_len = equal_parts.index(False) if False in equal_parts else len(equal_parts)
+                round_len = len(round_ids)
+
+            else:
+                round_ids = tokenizer(rou).input_ids
+                instruction_ids = tokenizer(parts[0]).input_ids
+                equal_parts = [x == y for x, y in zip(round_ids, instruction_ids)]
+
+                instruction_len = equal_parts.index(False) if False in equal_parts else len(equal_parts)
+                round_len = len(round_ids)
+
+            if i != 0 and not tokenizer.legacy and IS_TOKENIZER_GREATER_THAN_0_14:
+                round_len += 1
+                instruction_len += 1
+
+            target[cur_len: cur_len + instruction_len] = IGNORE_INDEX
+
+            cur_len += round_len
+        target[cur_len:] = IGNORE_INDEX
+
+        if cur_len < tokenizer.model_max_length:
+            if cur_len != total_len + rounds_len - 2:
                 target[:] = IGNORE_INDEX
                 print(
                     f"WARNING: tokenization mismatch: {cur_len} vs. {total_len}."
@@ -478,7 +575,7 @@ def preprocess_v1(
                 round_len -= 1
                 instruction_len -= 1
 
-            target[cur_len : cur_len + instruction_len] = IGNORE_INDEX
+            target[cur_len: cur_len + instruction_len] = IGNORE_INDEX
 
             cur_len += round_len
         target[cur_len:] = IGNORE_INDEX
@@ -541,7 +638,7 @@ def preprocess_mpt(
         total_len = int(target.ne(tokenizer.pad_token_id).sum())
 
         rounds = conversation.split(conv.sep)
-        re_rounds = [conv.sep.join(rounds[:3])] # system + user + gpt
+        re_rounds = [conv.sep.join(rounds[:3])]  # system + user + gpt
         for conv_idx in range(3, len(rounds), 2):
             re_rounds.append(conv.sep.join(rounds[conv_idx:conv_idx+2]))    # user + gpt
         cur_len = 0
@@ -566,7 +663,7 @@ def preprocess_mpt(
                 round_len += 1
                 instruction_len += 1
 
-            target[cur_len : cur_len + instruction_len] = IGNORE_INDEX
+            target[cur_len: cur_len + instruction_len] = IGNORE_INDEX
 
             cur_len += round_len
         target[cur_len:] = IGNORE_INDEX
@@ -627,6 +724,9 @@ def preprocess(
         return preprocess_v1(sources, tokenizer, has_image=has_image)
     if conversation_lib.default_conversation.version == "mpt":
         return preprocess_mpt(sources, tokenizer, has_image=has_image)
+    # fix: add qwen2
+    if conversation_lib.default_conversation.version.startswith("qwen_v2"):
+        return preprocess_qwen_2(sources, tokenizer, has_image=has_image)
     # add end signal and concatenate together
     conversations = []
     for source in sources:
@@ -634,6 +734,7 @@ def preprocess(
         conversation = _add_speaker_and_signal(header, source)
         conversations.append(conversation)
     # tokenize conversations
+
     def get_tokenize_len(prompts):
         return [len(tokenizer_image_token(prompt, tokenizer)) for prompt in prompts]
 
@@ -777,8 +878,8 @@ def make_supervised_data_module(tokenizer: transformers.PreTrainedTokenizer,
                                 data_args) -> Dict:
     """Make dataset and collator for supervised fine-tuning."""
     train_dataset = LazySupervisedDataset(tokenizer=tokenizer,
-                                data_path=data_args.data_path,
-                                data_args=data_args)
+                                          data_path=data_args.data_path,
+                                          data_args=data_args)
     data_collator = DataCollatorForSupervisedDataset(tokenizer=tokenizer)
     return dict(train_dataset=train_dataset,
                 eval_dataset=None,
@@ -809,7 +910,7 @@ def train(attn_implementation=None):
                 llm_int8_has_fp16_weight=False,
                 bnb_4bit_compute_dtype=compute_dtype,
                 bnb_4bit_use_double_quant=training_args.double_quant,
-                bnb_4bit_quant_type=training_args.quant_type # {'fp4', 'nf4'}
+                bnb_4bit_quant_type=training_args.quant_type  # {'fp4', 'nf4'}
             )
         ))
 
@@ -846,7 +947,7 @@ def train(attn_implementation=None):
 
     if training_args.bits in [4, 8]:
         from peft import prepare_model_for_kbit_training
-        model.config.torch_dtype=(torch.float32 if training_args.fp16 else (torch.bfloat16 if training_args.bf16 else torch.float32))
+        model.config.torch_dtype = (torch.float32 if training_args.fp16 else (torch.bfloat16 if training_args.bf16 else torch.float32))
         model = prepare_model_for_kbit_training(model, use_gradient_checkpointing=training_args.gradient_checkpointing)
 
     if training_args.gradient_checkpointing:
@@ -912,7 +1013,7 @@ def train(attn_implementation=None):
             model_args=model_args,
             fsdp=training_args.fsdp
         )
-        
+
         vision_tower = model.get_vision_tower()
         vision_tower.to(dtype=torch.bfloat16 if training_args.bf16 else torch.float16, device=training_args.device)
 
@@ -959,9 +1060,9 @@ def train(attn_implementation=None):
     data_module = make_supervised_data_module(tokenizer=tokenizer,
                                               data_args=data_args)
     trainer = LLaVATrainer(model=model,
-                    tokenizer=tokenizer,
-                    args=training_args,
-                    **data_module)
+                           tokenizer=tokenizer,
+                           args=training_args,
+                           **data_module)
 
     if list(pathlib.Path(training_args.output_dir).glob("checkpoint-*")):
         trainer.train(resume_from_checkpoint=True)
