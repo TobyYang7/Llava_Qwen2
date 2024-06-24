@@ -30,14 +30,3 @@ If you are not using Linux, do *NOT* proceed, see instructions for [macOS](https
     pip install flash-attn --no-build-isolation
     ```
 
-### Upgrade to latest code base
-
-    ```shell
-    git pull
-    pip install -e .
-
-    # if you see some import errors when you upgrade,
-    # please try running the command below (without #)
-    # pip install flash-attn --no-build-isolation --no-cache-dir
-    ```
-
