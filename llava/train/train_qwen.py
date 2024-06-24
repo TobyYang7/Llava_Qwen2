@@ -417,7 +417,7 @@ def preprocess_qwen_2(
     tokenizer: transformers.PreTrainedTokenizer,
     has_image: bool = False
 ) -> Dict:
-    print('-----preprocess_qwen_2-------')
+    # print('-----preprocess_qwen_2-------')
     conv = conversation_lib.default_conversation.copy()
     roles = {"human": conv.roles[0], "gpt": conv.roles[1]}
 
@@ -725,10 +725,10 @@ def preprocess(
     if conversation_lib.default_conversation.sep_style == conversation_lib.SeparatorStyle.LLAMA_2:
         return preprocess_llama_2(sources, tokenizer, has_image=has_image)
     if conversation_lib.default_conversation.version.startswith("v1"):
-        print('--v1--')
+        # print('--v1--')
         return preprocess_v1(sources, tokenizer, has_image=has_image)
     if conversation_lib.default_conversation.version == "mpt":
-        print('--mpt--')
+        # print('--mpt--')
         return preprocess_mpt(sources, tokenizer, has_image=has_image)
     # fix: add qwen2
     if conversation_lib.default_conversation.version.startswith("qwen_v2"):
@@ -1014,7 +1014,7 @@ def train(attn_implementation=None):
         else:  # use qwen
             tokenizer.legacy = False
         if model_args.version in conversation_lib.conv_templates:
-            print('version:', model_args.version)
+            # print('version:', model_args.version)
             conversation_lib.default_conversation = conversation_lib.conv_templates[model_args.version]
         else:
             conversation_lib.default_conversation = conversation_lib.conv_templates["vicuna_v1"]
