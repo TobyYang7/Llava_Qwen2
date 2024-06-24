@@ -4,6 +4,16 @@
 
 For more details on usage, refer to the original [LLaVA repository](https://github.com/haotian-liu/LLaVA). This custom repository specifically integrates the Qwen2 base model to leverage its advanced capabilities.
 
+## Pretrain Qwen2
+```bash
+bash pretrain_qwen2.sh
+```
+
+## Finetune Qwen2
+```bash
+bash ft_qwen2.sh
+```
+
 ## Installation
 
 This repository builds upon the original LLaVA project, integrating the Qwen2 base model for improved performance.
