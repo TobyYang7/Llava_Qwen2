@@ -4,10 +4,14 @@
 
 For more details on usage, refer to the original [LLaVA repository](https://github.com/haotian-liu/LLaVA). This custom repository specifically integrates the Qwen2 base model to leverage its advanced capabilities.
 
+## Dataset for Pretraining and Finetuning
+[LLaVA Dataset](https://github.com/haotian-liu/LLaVA?tab=readme-ov-file#visual-instruction-tuning) + [FinVis Dataset](https://huggingface.co/datasets/wza/FinVis)
+
 ## Pretrain Qwen2
 ```bash
 bash pretrain_qwen2.sh
 ```
+The checkpoint for the pretrain projector is located at `checkpoints/Qwen2-1.5B-Instruct-pretrain-FinVis/mm_projector.bin`
 
 ## Finetune Qwen2
 ```bash
