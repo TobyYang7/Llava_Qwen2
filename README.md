@@ -1,4 +1,4 @@
-# Custom LLaVA: Enhanced with Qwen2 Base Model
+# LLaVA-Qwen2: Enhanced with Qwen2 Base Model
 
 *Visual instruction tuning towards large language and vision models with GPT-4 level capabilities, enhanced with the Qwen2 base model.*
 
@@ -13,6 +13,14 @@ For more details on usage, refer to the original [LLaVA repository](https://gith
 ```bash
 git lfs install
 git clone https://www.modelscope.cn/TobyYang7/llava-qwen2-1.5b-instruct-finvis.git
+```
+
+## MMMU Eval
+
+Download the [MMMU](https://huggingface.co/datasets/MMMU/MMMU/tree/main) dataset first and rename it as `MMMU_eval\data`. For more details, you need to follow the official instructions [here](https://github.com/MMMU-Benchmark/MMMU/tree/main/eval).
+
+```bash
+bash eval.sh
 ```
 
 ## Pretrain Qwen2
@@ -53,8 +61,8 @@ If you are not using Linux, do *NOT* proceed, see instructions for [macOS](https
 2. Install Package
 
     ```shell
-    conda create -n custom_llava python=3.10 -y
-    conda activate custom_llava
+    conda create -n llava python=3.10 -y
+    conda activate llava
     pip install --upgrade pip  # enable PEP 660 support
     pip install -e .
     ```

@@ -1,7 +1,5 @@
 #!/bin/bash
 
-
-
 python -m llava.serve.cli \
     --model-path checkpoints/Qwen2-1.5B-Instruct-Vision \
     --image-file images/preview/stock_img_6.jpg \

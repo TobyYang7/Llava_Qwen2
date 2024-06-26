@@ -1,8 +1,8 @@
 #!/bin/bash
 wandb online
 # deepspeed llava/train/train_mem.py \
-python -m torch.distributed.run --nnodes=1 --nproc_per_node=4 --master_port=20001 llava/train/train_mem.py \
-    --model_name_or_path Qwen/Qwen2-1.5B-Instruct \
+python -m torch.distributed.run --nnodes=1 --nproc_per_node=3 --master_port=20001 llava/train/train_mem.py \
+    --model_name_or_path checkpoints/Qwen2-7B \
     --version plain \
     --data_path ./playground/data/LLaVA-Pretrain/pretrain.json \
     --image_folder ./playground/data/LLaVA-Pretrain \
@@ -13,9 +13,9 @@ python -m torch.distributed.run --nnodes=1 --nproc_per_node=4 --master_port=2000
     --mm_use_im_start_end False \
     --mm_use_im_patch_token False \
     --bf16 True \
-    --output_dir ./checkpoints/Qwen2-1.5B-Instruct-pretrain-FinVis \
+    --output_dir ./checkpoints/Qwen2-7B-pretrain-FinVis \
     --num_train_epochs 1 \
-    --per_device_train_batch_size 2 \
+    --per_device_train_batch_size 1 \
     --per_device_eval_batch_size 1 \
     --gradient_accumulation_steps 64 \
     --evaluation_strategy "no" \
