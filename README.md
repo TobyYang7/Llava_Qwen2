@@ -35,6 +35,8 @@ bash ft_qwen2.sh
 bash run_cli.sh
 ```
 
+![alt text](assets/README/image.png)
+
 ## Installation
 
 This repository builds upon the original LLaVA project, integrating the Qwen2 base model for improved performance.
