@@ -12,6 +12,8 @@ dist
 
 # Data
 playground/*
+images/fintwit-images/*
+push_hub.py
 
 # Editor
 .idea

@@ -28,7 +28,9 @@ def main(args):
     # Model
     disable_torch_init()
 
-    model_name = get_model_name_from_path(args.model_path)
+    # model_name = get_model_name_from_path(args.model_path)
+    model_name = args.model_name
+    print("---model name---", model_name)
     tokenizer, model, image_processor, context_len = load_pretrained_model(args.model_path, args.model_base, model_name, args.load_8bit, args.load_4bit, device=args.device)
 
     if "llama-2" in model_name.lower():
@@ -41,8 +43,12 @@ def main(args):
         conv_mode = "llava_v1"
     elif "mpt" in model_name.lower():
         conv_mode = "mpt"
+    elif "qwen_2" in model_name.lower():
+        conv_mode = "qwen_2"
     else:
         conv_mode = "llava_v0"
+    conv_mode = args.conv_mode
+    print("---version---", conv_mode)
 
     if args.conv_mode is not None and conv_mode != args.conv_mode:
         print('[WARNING] the auto inferred conversation mode is {}, while `--conv-mode` is {}, using {}'.format(conv_mode, args.conv_mode, args.conv_mode))
@@ -50,6 +56,7 @@ def main(args):
         args.conv_mode = conv_mode
 
     conv = conv_templates[args.conv_mode].copy()
+    print("--conv--", conv)
     if "mpt" in model_name.lower():
         roles = ('user', 'assistant')
     else:
@@ -116,7 +123,8 @@ if __name__ == "__main__":
     parser.add_argument("--model-base", type=str, default=None)
     parser.add_argument("--image-file", type=str, required=True)
     parser.add_argument("--device", type=str, default="cuda")
-    parser.add_argument("--conv-mode", type=str, default=None)
+    parser.add_argument("--conv_mode", type=str, default=None)
+    parser.add_argument("--model_name", type=str, default="llava-qwen2")
     parser.add_argument("--temperature", type=float, default=0.2)
     parser.add_argument("--max-new-tokens", type=int, default=512)
     parser.add_argument("--load-8bit", action="store_true")
