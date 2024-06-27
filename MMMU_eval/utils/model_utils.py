@@ -1,5 +1,6 @@
 from random import random
 import torch
+from transformers import TextStreamer
 
 
 def call_llava_engine_df(args, sample, model, tokenizer=None, processor=None):
@@ -52,18 +53,21 @@ def call_llava_engine_df(args, sample, model, tokenizer=None, processor=None):
             output_ids = model.generate(
                 input_ids,
                 images=image.unsqueeze(0).half().cuda(),
+                image_sizes=[image.size],
                 do_sample=True,
                 temperature=1,
                 top_p=None,
-                num_beams=5,
-                max_new_tokens=512,
+                num_beams=1,
+                max_new_tokens=128,
+                # streamer=TextStreamer(tokenizer, skip_prompt=True, skip_special_tokens=True),
                 use_cache=True)
 
         input_token_len = input_ids.shape[1]
         # n_diff_input_output = (input_ids != output_ids[:, :input_token_len]).sum().item()
         # if n_diff_input_output > 0:
         #     print(f'[Warning] {n_diff_input_output} output_ids are not the same as the input_ids')
-        response = tokenizer.batch_decode(output_ids[:, input_token_len:], skip_special_tokens=True)[0]
+        # response = tokenizer.batch_decode(output_ids[:, input_token_len:], skip_special_tokens=True)[0]
+        response = tokenizer.decode(output_ids[0], skip_special_tokens=True).strip()
         # print("---response---", response)
     else:  # multiple images actually
         if sample['question_type'] == 'multiple-choice':

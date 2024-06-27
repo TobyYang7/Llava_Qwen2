@@ -12,9 +12,10 @@ from utils.data_utils import CAT_SHORT2LONG, DOMAIN_CAT2SUB_CAT
 
 from utils.eval_utils import calculate_ins_level_acc
 
+
 def main():
     parser = ArgumentParser()
-    parser.add_argument('--path', type=str, default="./example_outputs/blip2_flant5xxl", help="The path to output directory.")
+    parser.add_argument('--path', type=str, default="./example_outputs/llava1.5-qwen2-1.5B-instruct", help="The path to output directory.")
     args = parser.parse_args()
 
     # load all results
@@ -34,7 +35,7 @@ def main():
     # add domain Subject
     for domain, in_domain_cats in DOMAIN_CAT2SUB_CAT.items():
         in_domain_cat_results = {}
-        for cat_name in in_domain_cats: # use the order in DOMAIN_CAT2SUB_CAT
+        for cat_name in in_domain_cats:  # use the order in DOMAIN_CAT2SUB_CAT
             if cat_name in all_results.keys():
                 in_domain_cat_results[cat_name] = all_results[cat_name]
             else:

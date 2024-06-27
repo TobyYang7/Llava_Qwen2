@@ -23,6 +23,51 @@ Download the [MMMU](https://huggingface.co/datasets/MMMU/MMMU/tree/main) dataset
 bash eval.sh
 ```
 
+<details>
+<summary>LLaVA-Qwen2-1.5B Result</summary>
+
+| Subject                                |   Data Num |   Acc |
+|----------------------------------------|------------|-------|
+| Overall-Art and Design                 |        120 | 0.217 |
+| Art                                    |         30 | 0.367 |
+| Art_Theory                             |         30 |   0.2 |
+| Design                                 |         30 |   0.2 |
+| Music                                  |         30 |   0.1 |
+| Overall-Business                       |        150 |  0.22 |
+| Accounting                             |         30 | 0.267 |
+| Economics                              |         30 | 0.167 |
+| Finance                                |         30 | 0.167 |
+| Manage                                 |         30 | 0.167 |
+| Marketing                              |         30 | 0.333 |
+| Overall-Science                        |        150 | 0.253 |
+| Biology                                |         30 | 0.233 |
+| Chemistry                              |         30 | 0.167 |
+| Geography                              |         30 | 0.133 |
+| Math                                   |         30 | 0.333 |
+| Physics                                |         30 |   0.4 |
+| Overall-Health and Medicine            |        150 | 0.333 |
+| Basic_Medical_Science                  |         30 | 0.367 |
+| Clinical_Medicine                      |         30 |   0.3 |
+| Diagnostics_and_Laboratory_Medicine    |         30 |   0.2 |
+| Pharmacy                               |         30 | 0.367 |
+| Public_Health                          |         30 | 0.433 |
+| Overall-Humanities and Social Science  |        120 | 0.433 |
+| History                                |         30 | 0.433 |
+| Literature                             |         30 | 0.433 |
+| Sociology                              |         30 |   0.5 |
+| Psychology                             |         30 | 0.367 |
+| Overall-Tech and Engineering           |        210 | 0.262 |
+| Agriculture                            |         30 | 0.333 |
+| Architecture_and_Engineering           |         30 | 0.233 |
+| Computer_Science                       |         30 | 0.333 |
+| Electronics                            |         30 |   0.2 |
+| Energy_and_Power                       |         30 | 0.233 |
+| Materials                              |         30 | 0.233 |
+| Mechanical_Engineering                 |         30 | 0.267 |
+| Overall                                |        900 | 0.282 |
+
+</details>
+
 ## Pretrain Qwen2
 
 ```bash

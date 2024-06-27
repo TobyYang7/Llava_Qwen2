@@ -19,6 +19,7 @@ if __name__ == '__main__':
         args.subject = CAT_SHORT2LONG.keys()
     
     ex_output_path = os.path.join(args.path)
+    print("---Path---", ex_output_path)
 
     all_results = {}
     for cat_short in args.subject:

@@ -1,8 +1,5 @@
-"""Parse and Evalate"""
 import os
 import json
-
-import pdb
 from argparse import ArgumentParser
 
 from utils.data_utils import save_json, CAT_SHORT2LONG, DOMAIN_CAT2SUB_CAT
@@ -46,33 +43,35 @@ if __name__ == '__main__':
         except KeyError:
             print("Skipping {} for not found".format(category))
             continue
-        
-        exampels_to_eval = []
+
+        examples_to_eval = []
         for data_id, parsed_pred in cat_outputs.items():
+            if data_id.startswith("dev"):
+                continue
             question_type = cat_answers[data_id]['question_type']
             if question_type != 'multiple-choice':
-                parsed_pred = parse_open_response(parsed_pred) # mainly for type consistency (make it number, etc.)
+                parsed_pred = parse_open_response(parsed_pred)  # mainly for type consistency (make it number, etc.)
             else:
                 parsed_pred = parsed_pred
 
-            exampels_to_eval.append({
+            examples_to_eval.append({
                 "id": data_id,
                 "question_type": question_type,
                 "answer": cat_answers[data_id]['ground_truth'],
                 "parsed_pred": parsed_pred
             })
 
-        judge_dict, metric_dict = evaluate(exampels_to_eval)
-        metric_dict.update({"num_example": len(exampels_to_eval)})
+        judge_dict, metric_dict = evaluate(examples_to_eval)
+        metric_dict.update({"num_example": len(examples_to_eval)})
 
         evaluation_result[category] = metric_dict
 
     printable_results = {}
-    # pdb.set_trace()
+
     # add domain Subject
     for domain, in_domain_cats in DOMAIN_CAT2SUB_CAT.items():
         in_domain_cat_results = {}
-        for cat_name in in_domain_cats: # use the order in DOMAIN_CAT2SUB_CAT
+        for cat_name in in_domain_cats:  # use the order in DOMAIN_CAT2SUB_CAT
             if cat_name in evaluation_result.keys():
                 in_domain_cat_results[cat_name] = evaluation_result[cat_name]
             else:
@@ -87,12 +86,14 @@ if __name__ == '__main__':
             printable_results[cat_name] = {"num": int(cat_results['num_example']),
                                            "acc": round(cat_results['acc'], 3)
                                            }
-        
-    # table.append(["-----------------------------", "-----", "----"])
+
     all_ins_acc = calculate_ins_level_acc(evaluation_result)
     printable_results['Overall'] = {"num": sum([cat_results['num_example'] for cat_results in evaluation_result.values()]),
                                     "acc": round(all_ins_acc, 3)
                                     }
 
-    print(printable_results)
-
+    # Print results in a formatted table
+    print("| Subject                                |   Data Num |   Acc |")
+    print("|----------------------------------------+------------+-------|")
+    for subject, results in printable_results.items():
+        print(f"| {subject:<38} | {results['num']:>10} | {results['acc']:>5} |")

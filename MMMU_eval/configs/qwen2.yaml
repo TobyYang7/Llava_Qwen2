@@ -12,4 +12,4 @@ short_ans_example_format:
 
 Answer the question using a single word or phrase."
 temperature:
-- 0
+- 0.3

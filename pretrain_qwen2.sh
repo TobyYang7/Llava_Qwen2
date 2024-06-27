@@ -1,7 +1,8 @@
 #!/bin/bash
 wandb online
-# deepspeed llava/train/train_mem.py \
-python -m torch.distributed.run --nnodes=1 --nproc_per_node=3 --master_port=20001 llava/train/train_mem.py \
+export CUDA_VISIBLE_DEVICES=0,1,2
+# python -m torch.distributed.run --nnodes=1 --nproc_per_node=3 --master_port=20001 llava/train/train_mem.py \
+deepspeed --include=localhost:0,1,2 llava/train/train_mem.py \
     --model_name_or_path checkpoints/Qwen2-7B \
     --version plain \
     --data_path ./playground/data/LLaVA-Pretrain/pretrain.json \
@@ -33,4 +34,4 @@ python -m torch.distributed.run --nnodes=1 --nproc_per_node=3 --master_port=2000
     --dataloader_num_workers 32 \
     --lazy_preprocess True \
     --report_to wandb \
-    # --deepspeed ./scripts/zero3.json 
+    --deepspeed ./scripts/zero2.json 
